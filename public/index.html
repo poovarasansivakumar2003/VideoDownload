@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Facebook Video Downloader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(to bottom, #e9f5ff, #f6f8fa);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 450px;
+            width: 90%;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 32px;
+            text-align: center;
+        }
+        h1 {
+            color: #1877f2;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        input[type="text"] {
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input[type="text"]:focus {
+            border-color: #1877f2;
+            box-shadow: 0 0 4px rgba(24, 119, 242, 0.5);
+        }
+        button {
+            padding: 12px;
+            background: #1877f2;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background: #145db2;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        #result {
+            margin-top: 24px;
+            text-align: center;
+            word-break: break-word;
+        }
+        #result img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        #result a {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 12px 20px;
+            background: #42b72a;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s, transform 0.1s;
+        }
+        #result a:hover {
+            background: #369423;
+        }
+        #result a:active {
+            transform: scale(0.98);
+        }
+        @media (max-width: 500px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            .container {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Facebook Video Downloader</h1>
+        <form id="downloadForm">
+            <input type="text" id="videoUrl" placeholder="Enter Facebook video URL" required>
+            <button type="submit">Download</button>
+        </form>
+        <div id="result"></div>
+    </div>
+    <script>
+        document.getElementById('downloadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const url = document.getElementById('videoUrl').value;
+            document.getElementById('result').innerHTML = 'Processing...';
+            try {
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const data = await response.json();
+                if (data.videoUrl) {
+                    let html = '';
+                    if (data.title) {
+                        html += `<h3>${data.title}</h3>`;
+                    }
+                    if (data.thumbnail) {
+                        html += `<img src="${data.thumbnail}" alt="Thumbnail" style="max-width:300px;display:block;margin-bottom:10px;">`;
+                    }
+                    if (data.duration) {
+                        html += `<div>Duration: ${data.duration}</div>`;
+                    }
+                    html += `<a href="${data.videoUrl}" download>Click here to download video</a>`;
+                    document.getElementById('result').innerHTML = html;
+                } else {
+                    document.getElementById('result').innerHTML = data.error || 'Error occurred';
+                }
+            } catch {
+                document.getElementById('result').innerHTML = 'Error occurred';
+            }
+        });
+    </script>
+</body>
+</html>
