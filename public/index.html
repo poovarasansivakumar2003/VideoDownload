@@ -104,7 +104,7 @@
         <h1>Facebook Video Downloader</h1>
         <form id="downloadForm">
             <input type="text" id="videoUrl" placeholder="Enter Facebook video URL" required>
-            <button type="submit">Download</button>
+            <button type="submit" id="submitBtn">Download</button>
         </form>
         <div id="result"></div>
     </div>
@@ -112,15 +112,23 @@
         document.getElementById('downloadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const url = document.getElementById('videoUrl').value;
-            document.getElementById('result').innerHTML = 'Processing...';
+            const submitBtn = document.getElementById('submitBtn');
+            const resultDiv = document.getElementById('result');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            resultDiv.innerHTML = 'Fetching video information...';
+            
             try {
                 const response = await fetch('/api/download', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url })
                 });
+                
                 const data = await response.json();
-                if (data.videoUrl) {
+                
+                if (response.ok && data.videoUrl) {
                     let html = '';
                     if (data.title) {
                         html += `<h3>${data.title}</h3>`;
@@ -131,13 +139,17 @@
                     if (data.duration) {
                         html += `<div>Duration: ${data.duration}</div>`;
                     }
-                    html += `<a href="${data.videoUrl}" download>Click here to download video</a>`;
-                    document.getElementById('result').innerHTML = html;
+                    html += `<a href="${data.videoUrl}" download target="_blank">Click here to download video</a>`;
+                    resultDiv.innerHTML = html;
                 } else {
-                    document.getElementById('result').innerHTML = data.error || 'Error occurred';
+                    resultDiv.innerHTML = `<div style="color: red;">Error: ${data.error || 'Unknown error occurred'}</div>`;
                 }
-            } catch {
-                document.getElementById('result').innerHTML = 'Error occurred';
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.innerHTML = `<div style="color: red;">Network error: ${error.message}</div>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Download';
             }
         });
     </script>

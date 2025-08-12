@@ -1,11 +1,24 @@
+console.log('Starting application...');
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const Facebook = require('facebook-dl');
+
+console.log('Loading Facebook module...');
+let Facebook;
+try {
+    Facebook = require('facebook-dl');
+    console.log('Facebook module loaded successfully');
+} catch (err) {
+    console.error('Error loading facebook-dl:', err.message);
+    process.exit(1);
+}
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+console.log('Setting up routes...');
 
 app.post('/api/download', async (req, res) => {
     const { url } = req.body;
@@ -30,14 +43,23 @@ app.post('/api/download', async (req, res) => {
             duration: videoInfo.results.duration
         });
     } catch (err) {
+        console.error('Error in download route:', err);
         res.status(500).json({ error: 'Failed to fetch video' });
     }
 });
 
 app.use(express.static('public'));
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+console.log('Starting server on port', PORT);
+
+app.listen(PORT, (err) => {
+    if (err) {
+        console.error('Failed to start server:', err);
+    } else {
+        console.log(`Server running on http://localhost:${PORT}`);
+    }
+}).on('error', (err) => {
+    console.error('Server error:', err);
 });
