@@ -240,7 +240,7 @@
                     }
                     
                     // Meta information in a responsive layout
-                    if (data.author || data.isVerified || data.likes || data.mediaType || data.duration) {
+                        if (data.author || data.isVerified || data.likes || data.mediaType || data.duration || data.quality || data.isShort) {
                         html += '<div class="meta-info">';
                         if (data.author) {
                             html += `<div>👤 ${data.author}${data.isVerified ? ' ✓' : ''}</div>`;
@@ -250,12 +250,21 @@
                         }
                         if (data.mediaType) {
                             html += `<div>📹 ${data.mediaType}</div>`;
+                        }                                                                                                                   
+                        if (data.quality) {
+                            html += `<div>🎥 ${data.quality}</div>`;
                         }
                         if (data.duration) {
                             html += `<div>⏱️ ${data.duration}</div>`;
                         }
+                        if (data.isShort) {
+                            html += `<div>🩳 YouTube Short</div>`;
+                        }
+                        if (data.container) {
+                            html += `<div>📦 ${data.container}</div>`;
+                        }
                         html += '</div>';
-                    }
+                    }   
                     
                     // Only show thumbnail for non-Instagram content
                     if (data.thumbnail && data.platform !== 'Instagram') {

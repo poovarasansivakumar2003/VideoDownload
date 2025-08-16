@@ -130,7 +130,7 @@ server.on('error', (err) => {
 function detectPlatform(url) {
     if (url.includes('facebook.com') || url.includes('fb.watch')) {
         return 'facebook';
-    } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    } else if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube.com/shorts')) {
         return 'youtube';
     } else if (url.includes('instagram.com')) {
         return 'instagram';
@@ -170,26 +170,102 @@ async function downloadFacebook(url) {
     }
 }
 
-// YouTube download function
+// YouTube download function - Updated to handle Shorts and other formats
 async function downloadYouTube(url) {
     try {
-        const info = await ytdl.getInfo(url);
-        const format = ytdl.chooseFormat(info.formats, { 
-            quality: 'highestvideo',
-            filter: 'videoandaudio'
-        });
+        console.log('Attempting YouTube download:', url);
+        
+        // Normalize YouTube URLs (including Shorts)
+        let videoId = extractYouTubeId(url);
+        if (!videoId) {
+            throw new Error('Could not extract YouTube video ID');
+        }
+        
+        const normalizedUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        console.log('Normalized URL:', normalizedUrl);
+        
+        const info = await ytdl.getInfo(normalizedUrl);
+        console.log('YouTube info received:', info.videoDetails.title);
+        
+        // Try to get the best available format
+        let format;
+        try {
+            // First try to get format with both video and audio
+            format = ytdl.chooseFormat(info.formats, { 
+                quality: 'highest',
+                filter: 'audioandvideo'
+            });
+        } catch (e) {
+            console.log('No combined format found, trying video only...');
+            try {
+                // Fallback to video only
+                format = ytdl.chooseFormat(info.formats, { 
+                    quality: 'highest',
+                    filter: 'video'
+                });
+            } catch (e2) {
+                console.log('No video format found, trying audio only...');
+                // Last resort - audio only
+                format = ytdl.chooseFormat(info.formats, { 
+                    quality: 'highest',
+                    filter: 'audio'
+                });
+            }
+        }
+        
+        if (!format) {
+            throw new Error('No downloadable format found');
+        }
+        
+        console.log('Selected format:', format.qualityLabel || format.audioQuality, format.container);
         
         return {
             platform: 'YouTube',
             videoUrl: format.url,
             title: info.videoDetails.title,
-            thumbnail: info.videoDetails.thumbnails[0]?.url,
+            thumbnail: info.videoDetails.thumbnails && info.videoDetails.thumbnails.length > 0 
+                ? info.videoDetails.thumbnails[info.videoDetails.thumbnails.length - 1].url 
+                : null,
             duration: info.videoDetails.lengthSeconds ? 
-                new Date(info.videoDetails.lengthSeconds * 1000).toISOString().substr(11, 8) : null,
-            author: info.videoDetails.author.name
+                formatDuration(info.videoDetails.lengthSeconds) : null,
+            author: info.videoDetails.author.name,
+            quality: format.qualityLabel || format.audioQuality || 'Unknown',
+            container: format.container,
+            isShort: url.includes('/shorts/') || (info.videoDetails.lengthSeconds && info.videoDetails.lengthSeconds <= 60)
         };
+        
     } catch (error) {
-        throw new Error('YouTube video not available or private');
+        console.error('YouTube download error:', error);
+        throw new Error(`YouTube video download failed: ${error.message}`);
+    }
+}
+
+// Helper function to extract YouTube video ID from various URL formats
+function extractYouTubeId(url) {
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+        /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/
+    ];
+    
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) {
+            return match[1];
+        }
+    }
+    return null;
+}
+
+// Helper function to format duration
+function formatDuration(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    } else {
+        return `${minutes}:${secs.toString().padStart(2, '0')}`;
     }
 }
 
