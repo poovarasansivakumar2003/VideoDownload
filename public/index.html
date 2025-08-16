@@ -2,113 +2,217 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Facebook Video Downloader</title>
+    <title>Social Media Video Downloader</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(to bottom, #e9f5ff, #f6f8fa);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
         }
         .container {
-            max-width: 450px;
-            width: 90%;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 2rem;
             text-align: center;
         }
         h1 {
-            color: #1877f2;
-            font-size: 1.8rem;
-            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            line-height: 1.4;
         }
         form {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
         input[type="text"] {
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
+            padding: 1rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
             font-size: 1rem;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
         }
         input[type="text"]:focus {
-            border-color: #1877f2;
-            box-shadow: 0 0 4px rgba(24, 119, 242, 0.5);
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            background: rgba(255, 255, 255, 1);
         }
         button {
-            padding: 12px;
-            background: #1877f2;
-            color: #fff;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        button:hover {
-            background: #145db2;
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
         }
-        button:active {
-            transform: scale(0.98);
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         #result {
-            margin-top: 24px;
-            text-align: center;
+            margin-top: 2rem;
+            text-align: left;
             word-break: break-word;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            padding: 1.5rem;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        #result:empty {
+            display: none;
         }
         #result img {
             max-width: 100%;
-            border-radius: 8px;
-            margin-bottom: 12px;
+            border-radius: 10px;
+            margin: 1rem auto;
+            display: block;
         }
         #result a {
             display: inline-block;
-            margin-top: 12px;
-            padding: 12px 20px;
-            background: #42b72a;
-            color: #fff;
-            border-radius: 8px;
+            margin-top: 1rem;
+            padding: 0.875rem 1.5rem;
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            border-radius: 10px;
             text-decoration: none;
-            font-weight: 500;
-            transition: background 0.2s, transform 0.1s;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
         }
         #result a:hover {
-            background: #369423;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
         }
-        #result a:active {
-            transform: scale(0.98);
+        .test-button {
+            background: linear-gradient(135deg, #27ae60, #229954) !important;
+            margin-top: 1rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
         }
-        @media (max-width: 500px) {
-            h1 {
-                font-size: 1.5rem;
+        .alternative-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .alternative-links a {
+            margin: 0;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        .meta-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+            justify-content: center;
+        }
+        .meta-info > div {
+            background: rgba(52, 152, 219, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
             }
             .container {
-                padding: 24px;
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 1.75rem;
+            }
+            input[type="text"], button {
+                padding: 0.875rem;
+            }
+            #result {
+                padding: 1rem;
+            }
+            .meta-info {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
+        }
+        @media (max-width: 400px) {
+            .container {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Facebook Video Downloader</h1>
+        <h1>Social Media Video Downloader</h1>
+        <div class="subtitle">
+            Download videos from Facebook, YouTube & Instagram<br>
+            Fast, secure, and completely free
+        </div>
+        
         <form id="downloadForm">
-            <input type="text" id="videoUrl" placeholder="Enter Facebook video URL" required>
-            <button type="submit" id="submitBtn">Download</button>
+            <input type="text" id="videoUrl" placeholder="Paste your video URL here..." required>
+            <button type="submit" id="submitBtn">Download Video</button>
         </form>
+        
         <div id="result"></div>
+        
+        <button type="button" onclick="testServer()" class="test-button">Test Server Status</button>
     </div>
     <script>
+        async function testServer() {
+            try {
+                const response = await fetch('/api/test');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<div style="color: red;">Server test failed: ${error.message}</div>`;
+            }
+        }
+
         document.getElementById('downloadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const url = document.getElementById('videoUrl').value;
@@ -117,7 +221,7 @@
             
             submitBtn.disabled = true;
             submitBtn.textContent = 'Processing...';
-            resultDiv.innerHTML = 'Fetching video information...';
+            resultDiv.innerHTML = '<div style="text-align: center; color: #3498db;">🔄 Analyzing video URL...</div>';
             
             try {
                 const response = await fetch('/api/download', {
@@ -129,27 +233,60 @@
                 const data = await response.json();
                 
                 if (response.ok && data.videoUrl) {
-                    let html = '';
+                    let html = `<div style="color: #3498db; font-weight: bold; text-align: center; margin-bottom: 1rem;">📱 Platform: ${data.platform}</div>`;
+                    
                     if (data.title) {
-                        html += `<h3>${data.title}</h3>`;
+                        html += `<h3 style="margin: 0 0 1rem 0; color: #2c3e50; text-align: center;">${data.title}</h3>`;
                     }
-                    if (data.thumbnail) {
-                        html += `<img src="${data.thumbnail}" alt="Thumbnail" style="max-width:300px;display:block;margin-bottom:10px;">`;
+                    
+                    // Meta information in a responsive layout
+                    if (data.author || data.isVerified || data.likes || data.mediaType || data.duration) {
+                        html += '<div class="meta-info">';
+                        if (data.author) {
+                            html += `<div>👤 ${data.author}${data.isVerified ? ' ✓' : ''}</div>`;
+                        }
+                        if (data.likes) {
+                            html += `<div>❤️ ${data.likes.toLocaleString()}</div>`;
+                        }
+                        if (data.mediaType) {
+                            html += `<div>📹 ${data.mediaType}</div>`;
+                        }
+                        if (data.duration) {
+                            html += `<div>⏱️ ${data.duration}</div>`;
+                        }
+                        html += '</div>';
                     }
-                    if (data.duration) {
-                        html += `<div>Duration: ${data.duration}</div>`;
+                    
+                    // Only show thumbnail for non-Instagram content
+                    if (data.thumbnail && data.platform !== 'Instagram') {
+                        html += `<img src="${data.thumbnail}" alt="Thumbnail">`;
                     }
-                    html += `<a href="${data.videoUrl}" download target="_blank">Click here to download video</a>`;
+                    
+                    // Handle Instagram alternative methods
+                    if (data.alternativeMethod && data.platform === 'Instagram') {
+                        html += `
+                            <div style="color: #e67e22; margin: 1rem 0; text-align: center; font-weight: 500;">${data.message}</div>
+                            <div style="text-align: center; margin-bottom: 1rem;">Try these alternative methods:</div>
+                            <div class="alternative-links">
+                                <a href="https://snapinsta.app/?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">📱 SnapInsta.app</a>
+                                <a href="https://downloadgram.com/?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">📥 DownloadGram.com</a>
+                                <a href="https://instasave.website/?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">💾 InstaSave.website</a>
+                            </div>
+                        `;
+                    } else {
+                        html += `<a href="${data.videoUrl}" download target="_blank">📥 Download ${data.mediaType || 'Video'}</a>`;
+                    }
+                    
                     resultDiv.innerHTML = html;
                 } else {
-                    resultDiv.innerHTML = `<div style="color: red;">Error: ${data.error || 'Unknown error occurred'}</div>`;
+                    resultDiv.innerHTML = `<div style="color: #e74c3c; text-align: center; font-weight: 500;">❌ Error: ${data.error || 'Unknown error occurred'}</div>`;
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
-                resultDiv.innerHTML = `<div style="color: red;">Network error: ${error.message}</div>`;
+                resultDiv.innerHTML = `<div style="color: #e74c3c; text-align: center; font-weight: 500;">🔴 Network error: ${error.message}</div>`;
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Download';
+                submitBtn.textContent = 'Download Video';
             }
         });
     </script>

@@ -1,5 +1,5 @@
 {
-  "name": "facebook-video-download",
+  "name": "video-download",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -11,9 +11,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "body-parser": "^2.2.0",
+    "@distube/ytdl-core": "^4.13.3",
+    "axios": "^1.6.0",
+    "body-parser": "^1.20.2",
+    "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "facebook-dl": "^1.0.0"
+    "express": "^4.18.2",
+    "facebook-dl": "^1.0.0",
+    "instagram-url-direct": "^2.0.7"
   }
 }
