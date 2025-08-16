@@ -1,10 +1,10 @@
-# Facebook Video Downloader Web App
+# Video Downloader Web App
 
-This web application allows users to download public Facebook videos by providing the video URL. It fetches the video information and provides a direct download link for HD or SD quality.
+This web application allows users to download public Youtube, Instagram and Facebook videos by providing the video URL. It fetches the video information and provides a direct download link for HD or SD quality.
 
 ## Features
 
-- Download public Facebook videos in HD or SD quality.
+- Download public Youtube, Instagram and Facebook videos in HD or SD quality.
 - Simple REST API backend using Node.js and Express.
 - CORS enabled for frontend-backend communication.
 
@@ -57,7 +57,7 @@ This web application allows users to download public Facebook videos by providin
 
 ## Notes
 
-- Only public Facebook videos are supported.
+- Only public Youtube, Instagram and Facebook videos are supported.
 - This app is for educational purposes.
 
 ## License
