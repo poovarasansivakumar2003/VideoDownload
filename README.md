@@ -18,7 +18,7 @@ This web application allows users to download public Youtube, Instagram and Face
 1. **Clone the repository:**
    ```
    git clone <repository-url>
-   cd facebookVideoDownload
+   cd VideoDownload
    ```
 
 2. **Install dependencies:**
