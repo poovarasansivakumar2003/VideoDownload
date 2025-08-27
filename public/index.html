@@ -153,6 +153,41 @@
             font-size: 0.9rem;
             color: #2c3e50;
         }
+        .platform-icons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .platform-icons span {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            background: #f1f1f1;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .platform-icons span i {
+            margin-right: 5px;
+        }
+        #loader {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .loader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         @media (max-width: 600px) {
             body {
                 padding: 10px;
@@ -189,14 +224,26 @@
     <div class="container">
         <h1>Social Media Video Downloader</h1>
         <div class="subtitle">
-            Download videos from Facebook, YouTube & Instagram<br>
+            Download videos from Facebook, YouTube, Instagram & TikTok<br>
             Fast, secure, and completely free
+        </div>
+        
+        <div class="platform-icons">
+            <span>📘 Facebook</span>
+            <span>📺 YouTube</span>
+            <span>📸 Instagram</span>
+            <span>🎵 TikTok</span>
         </div>
         
         <form id="downloadForm">
             <input type="text" id="videoUrl" placeholder="Paste your video URL here..." required>
             <button type="submit" id="submitBtn">Download Video</button>
         </form>
+        
+        <div id="loader">
+            <div class="loader-spinner"></div>
+            <p>Processing your request...</p>
+        </div>
         
         <div id="result"></div>
         
@@ -205,11 +252,14 @@
     <script>
         async function testServer() {
             try {
+                document.getElementById('loader').style.display = 'block';
                 const response = await fetch('/api/test');
                 const data = await response.json();
                 document.getElementById('result').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                document.getElementById('loader').style.display = 'none';
             } catch (error) {
                 document.getElementById('result').innerHTML = `<div style="color: red;">Server test failed: ${error.message}</div>`;
+                document.getElementById('loader').style.display = 'none';
             }
         }
 
@@ -218,10 +268,12 @@
             const url = document.getElementById('videoUrl').value;
             const submitBtn = document.getElementById('submitBtn');
             const resultDiv = document.getElementById('result');
+            const loader = document.getElementById('loader');
             
             submitBtn.disabled = true;
             submitBtn.textContent = 'Processing...';
-            resultDiv.innerHTML = '<div style="text-align: center; color: #3498db;">🔄 Analyzing video URL...</div>';
+            resultDiv.innerHTML = '';
+            loader.style.display = 'block';
             
             try {
                 const response = await fetch('/api/download', {
@@ -232,62 +284,104 @@
                 
                 const data = await response.json();
                 
-                if (response.ok && data.videoUrl) {
-                    let html = `<div style="color: #3498db; font-weight: bold; text-align: center; margin-bottom: 1rem;">📱 Platform: ${data.platform}</div>`;
-                    
-                    if (data.title) {
-                        html += `<h3 style="margin: 0 0 1rem 0; color: #2c3e50; text-align: center;">${data.title}</h3>`;
-                    }
-                    
-                    // Meta information in a responsive layout
+                if (response.ok) {
+                    if (data.videoUrl) {
+                        // Success case - we have a video URL
+                        let html = `<div style="color: #3498db; font-weight: bold; text-align: center; margin-bottom: 1rem;">📱 Platform: ${data.platform}</div>`;
+                        
+                        if (data.title) {
+                            html += `<h3 style="margin: 0 0 1rem 0; color: #2c3e50; text-align: center;">${data.title}</h3>`;
+                        }
+                        
+                        // Meta information in a responsive layout
                         if (data.author || data.isVerified || data.likes || data.mediaType || data.duration || data.quality || data.isShort) {
-                        html += '<div class="meta-info">';
-                        if (data.author) {
-                            html += `<div>👤 ${data.author}${data.isVerified ? ' ✓' : ''}</div>`;
+                            html += '<div class="meta-info">';
+                            if (data.author) {
+                                html += `<div>👤 ${data.author}${data.isVerified ? ' ✓' : ''}</div>`;
+                            }
+                            if (data.likes) {
+                                html += `<div>❤️ ${Number(data.likes).toLocaleString()}</div>`;
+                            }
+                            if (data.views) {
+                                html += `<div>👁️ ${Number(data.views).toLocaleString()}</div>`;
+                            }
+                            if (data.comments) {
+                                html += `<div>💬 ${Number(data.comments).toLocaleString()}</div>`;
+                            }
+                            if (data.mediaType) {
+                                html += `<div>📹 ${data.mediaType}</div>`;
+                            }                                                                                                                   
+                            if (data.quality) {
+                                html += `<div>🎥 ${data.quality}</div>`;
+                            }
+                            if (data.duration) {
+                                html += `<div>⏱️ ${data.duration}</div>`;
+                            }
+                            if (data.isShort) {
+                                html += `<div>🩳 YouTube Short</div>`;
+                            }
+                            if (data.isReel) {
+                                html += `<div>📱 ${data.platform} Reel</div>`;
+                            }
+                            if (data.container) {
+                                html += `<div>📦 ${data.container}</div>`;
+                            }
+                            html += '</div>';
+                        }   
+                        
+                        // Only show thumbnail for non-Instagram content
+                        if (data.thumbnail) {
+                            html += `<img src="${data.thumbnail}" alt="Thumbnail">`;
                         }
-                        if (data.likes) {
-                            html += `<div>❤️ ${data.likes.toLocaleString()}</div>`;
-                        }
-                        if (data.mediaType) {
-                            html += `<div>📹 ${data.mediaType}</div>`;
-                        }                                                                                                                   
-                        if (data.quality) {
-                            html += `<div>🎥 ${data.quality}</div>`;
-                        }
-                        if (data.duration) {
-                            html += `<div>⏱️ ${data.duration}</div>`;
-                        }
-                        if (data.isShort) {
-                            html += `<div>🩳 YouTube Short</div>`;
-                        }
-                        if (data.container) {
-                            html += `<div>📦 ${data.container}</div>`;
-                        }
-                        html += '</div>';
-                    }   
-                    
-                    // Only show thumbnail for non-Instagram content
-                    if (data.thumbnail && data.platform !== 'Instagram') {
-                        html += `<img src="${data.thumbnail}" alt="Thumbnail">`;
-                    }
-                    
-                    // Handle Instagram alternative methods
-                    if (data.alternativeMethod && data.platform === 'Instagram') {
-                        html += `
-                            <div style="color: #e67e22; margin: 1rem 0; text-align: center; font-weight: 500;">${data.message}</div>
+                        
+                        html += `<a href="${data.videoUrl}" download target="_blank">📥 Download ${data.mediaType || 'Video'}</a>`;
+                        
+                        resultDiv.innerHTML = html;
+                    } else if (data.alternativeMethod) {
+                        // Alternative method case - show options
+                        let html = `
+                            <div style="color: #3498db; font-weight: bold; text-align: center; margin-bottom: 1rem;">📱 Platform: ${data.platform}</div>
+                            <h3 style="margin: 0 0 1rem 0; color: #2c3e50; text-align: center;">${data.title}</h3>
+                            <div style="color: #e67e22; margin: 1rem 0; text-align: center; font-weight: 500;">${data.message || 'Direct download not available'}</div>
                             <div style="text-align: center; margin-bottom: 1rem;">Try these alternative methods:</div>
-                            <div class="alternative-links">
+                        `;
+                        
+                        html += '<div class="alternative-links">';
+                        
+                        if (data.platform === 'Facebook') {
+                            html += `
+                                <a href="https://fdownloader.net/?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">📘 FDownloader.net</a>
+                                <a href="https://www.getfvid.com/downloader?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">📥 GetFVid.com</a>
+                                <a href="https://fbdown.net/?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">💾 FBDown.net</a>
+                            `;
+                        } else if (data.platform === 'Instagram') {
+                            html += `
                                 <a href="https://snapinsta.app/?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">📱 SnapInsta.app</a>
                                 <a href="https://downloadgram.com/?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">📥 DownloadGram.com</a>
                                 <a href="https://instasave.website/?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">💾 InstaSave.website</a>
-                            </div>
-                        `;
+                            `;
+                        } else if (data.platform === 'YouTube') {
+                            html += `
+                                <a href="https://9convert.com/en32?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">📺 9Convert.com</a>
+                                <a href="https://en.savefrom.net/#url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">📥 SaveFrom.net</a>
+                                <a href="https://y2mate.com/youtube/${extractVideoId(data.originalUrl || url)}" target="_blank">💾 Y2mate.com</a>
+                            `;
+                        } else if (data.platform === 'TikTok') {
+                            html += `
+                                <a href="https://ssstik.io/en?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">🎵 SssTik.io</a>
+                                <a href="https://snaptik.app/en?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">📥 SnapTik.app</a>
+                                <a href="https://musicallydown.com/?url=${encodeURIComponent(data.originalUrl || url)}" target="_blank">💾 MusicallyDown.com</a>
+                            `;
+                        }
+                        
+                        html += '</div>';
+                        resultDiv.innerHTML = html;
                     } else {
-                        html += `<a href="${data.videoUrl}" download target="_blank">📥 Download ${data.mediaType || 'Video'}</a>`;
+                        // Error case but with 200 response
+                        resultDiv.innerHTML = `<div style="color: #e74c3c; text-align: center; font-weight: 500;">❓ Unexpected response format. Please try again or use another URL.</div>`;
                     }
-                    
-                    resultDiv.innerHTML = html;
                 } else {
+                    // Error case
                     resultDiv.innerHTML = `<div style="color: #e74c3c; text-align: center; font-weight: 500;">❌ Error: ${data.error || 'Unknown error occurred'}</div>`;
                 }
             } catch (error) {
@@ -296,8 +390,16 @@
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Download Video';
+                loader.style.display = 'none';
             }
         });
+        
+        // Helper function to extract YouTube video ID
+        function extractVideoId(url) {
+            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[7].length === 11) ? match[7] : '';
+        }
     </script>
 </body>
 </html>
