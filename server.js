@@ -51,7 +51,7 @@ app.use(bodyParser.json());
 
 console.log('Setting up routes...');
 
-// Enhanced download endpoint
+// Enhanced download endpoint with rate-limiting
 app.post('/api/download', async (req, res) => {
     console.log('Received request:', req.body);
     const { url } = req.body;
@@ -70,6 +70,8 @@ app.post('/api/download', async (req, res) => {
                 result = await downloadFacebookVideo(url);
                 break;
             case 'youtube':
+                // Add a small delay before YouTube requests
+                await delay(500);
                 result = await downloadYouTube(url);
                 break;
             case 'instagram':
@@ -85,6 +87,15 @@ app.post('/api/download', async (req, res) => {
         res.json(result);
     } catch (err) {
         console.error('Error in download route:', err);
+        
+        // Check if it's a 429 error
+        if (err.statusCode === 429 || err.message?.includes('429')) {
+            return res.status(429).json({ 
+                error: 'Rate limited by the video platform. Please wait a few minutes and try again.',
+                details: 'The platform is temporarily blocking too many requests. Try using the alternative methods.'
+            });
+        }
+        
         res.status(500).json({ error: `Failed to fetch video: ${err.message}` });
     }
 });
@@ -307,6 +318,38 @@ function extractFacebookThumbnail(html) {
     }
 }
 
+// Retry function with exponential backoff for rate-limiting
+async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 2000) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (error) {
+            // Check if it's a rate-limit error (429)
+            const isRateLimit = 
+                error.statusCode === 429 || 
+                error.status === 429 ||
+                error.message?.includes('429') ||
+                error.message?.includes('rate limit') ||
+                error.message?.includes('too many requests');
+            
+            if (!isRateLimit || attempt === maxRetries) {
+                throw error;
+            }
+            
+            // Calculate exponential backoff: 2s, 4s, 8s, etc.
+            const delay = initialDelay * Math.pow(2, attempt);
+            console.log(`⏳ Rate limited (429). Retrying in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`);
+            
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
+
+// Helper function to add delay between requests
+async function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Enhanced YouTube download function with better handling of different formats
 async function downloadYouTube(url) {
     try {
@@ -327,7 +370,18 @@ async function downloadYouTube(url) {
             return await downloadYouTubeAlternative(normalizedUrl, videoId);
         }
         
-        const info = await ytdl.getInfo(normalizedUrl);
+        // Get video info with retry logic to handle rate-limiting
+        const info = await retryWithBackoff(async () => {
+            return await ytdl.getInfo(normalizedUrl, {
+                requestOptions: {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept-Language': 'en-US,en;q=0.9'
+                    }
+                }
+            });
+        }, 3, 2000);
+        
         console.log('YouTube info received:', info.videoDetails.title);
         
         // Get both audio and video formats for better options
@@ -396,7 +450,22 @@ async function downloadYouTube(url) {
         };
         
     } catch (error) {
-        console.error('YouTube download error:', error);
+        console.error('YouTube download error:', error.message);
+        
+        // Check if it's a rate-limit error
+        if (error.statusCode === 429 || error.message?.includes('429') || error.message?.includes('rate limit')) {
+            console.error('YouTube rate-limited. Please try again in a few minutes.');
+            return {
+                platform: 'YouTube',
+                videoUrl: null,
+                title: 'Rate Limited - Please Try Later',
+                thumbnail: null,
+                alternativeMethod: true,
+                message: 'YouTube is rate-limiting requests. Please try again in a few minutes or use the alternative methods below.',
+                originalUrl: url
+            };
+        }
+        
         // Try alternative method if ytdl fails
         try {
             const videoId = extractYouTubeId(url);

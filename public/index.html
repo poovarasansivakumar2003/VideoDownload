@@ -382,7 +382,11 @@
                     }
                 } else {
                     // Error case
-                    resultDiv.innerHTML = `<div style="color: #e74c3c; text-align: center; font-weight: 500;">❌ Error: ${data.error || 'Unknown error occurred'}</div>`;
+                    if (response.status === 429) {
+                        resultDiv.innerHTML = `<div style="color: #e74c3c; text-align: center; font-weight: 500;">⏸️ ${data.error || 'The platform is rate-limiting requests. Please wait a few minutes and try again.'}</div><div style="color: #7f8c8d; margin-top: 1rem; font-size: 0.9rem;">💡 Tip: You can use the alternative methods shown above to download the video.</div>`;
+                    } else {
+                        resultDiv.innerHTML = `<div style="color: #e74c3c; text-align: center; font-weight: 500;">❌ Error: ${data.error || 'Unknown error occurred'}</div>`;
+                    }
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
