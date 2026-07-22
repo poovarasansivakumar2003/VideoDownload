@@ -22,10 +22,11 @@ def index():
             'cookiefile': 'cookies.txt',
             'extractor_args': {
                 'youtube': {
-                'player_client': ['ios', 'android', 'mweb']
+                    'player_client': ['android', 'ios', 'mweb', 'web_creator'],
+                    'player_skip': ['webpage', 'configs'],
+                }
             }
         }
-}
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
