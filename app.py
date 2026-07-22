@@ -16,7 +16,7 @@ def index():
             return redirect(url_for("index"))
 
         ydl_opts = {
-            'format': 'best[ext=mp4]/best',
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
             'quiet': True,
             'no_warnings': True,
             'cookiefile': 'cookies.txt',
