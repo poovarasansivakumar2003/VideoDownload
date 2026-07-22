@@ -15,12 +15,17 @@ def index():
             flash("Please enter a YouTube URL.", "error")
             return redirect(url_for("index"))
 
-        # Configure yt-dlp to extract information without downloading to the server disk
         ydl_opts = {
-            'format': 'best[ext=mp4]/best',  # Fetch the best standalone MP4 stream
+            'format': 'best[ext=mp4]/best',
             'quiet': True,
             'no_warnings': True,
+            'cookiefile': 'cookies.txt',
+            'extractor_args': {
+                'youtube': {
+                'player_client': ['ios', 'android', 'mweb']
+            }
         }
+}
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
