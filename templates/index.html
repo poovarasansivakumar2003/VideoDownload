@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Downloader</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 480px; }
+        h1 { text-align: center; color: #333; margin-top: 0; }
+        form { display: flex; gap: 8px; margin-bottom: 1rem; }
+        input[type="url"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+        button, .btn-download { background: #ff0000; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; text-decoration: none; font-weight: bold; text-align: center; display: inline-block; }
+        button:hover, .btn-download:hover { background: #cc0000; }
+        .error { color: #d9534f; background: #fdf7f7; padding: 10px; border-radius: 6px; margin-bottom: 1rem; border: 1px solid #d9534f; }
+        .preview { text-align: center; margin-top: 1.5rem; border-top: 1px solid #eee; padding-top: 1.5rem; }
+        .preview img { max-width: 100%; border-radius: 8px; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>YouTube Downloader</h1>
+
+    {% with messages = get_flashed_messages(category_filter=["error"]) %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <input type="url" name="url" placeholder="Paste YouTube link here..." required>
+        <button type="submit">Fetch</button>
+    </form>
+
+    {% if video %}
+        <div class="preview">
+            <img src="{{ video.thumbnail }}" alt="Thumbnail">
+            <h3>{{ video.title }}</h3>
+            <p><strong>Duration:</strong> {{ video.duration }}</p>
+            <a href="{{ video.download_url }}" class="btn-download" download target="_blank">Download Video</a>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
